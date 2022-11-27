@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  db:
+    container_name: ${DATABASE_CONTAINER}
+    image: mysql:8.0
+    volumes:
+      - db-store:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_ROOT_PASSWORD=${DATABASE_PASSWORD}
+    ports:
+      - ${DATABASE_PORT}:3306
+
+volumes:
+  db-store:

@@ -1,0 +1,7 @@
+DROP DATABASE IF EXISTS `genericdao`;
+
+CREATE DATABASE IF NOT EXISTS `genericdao`;
+
+DROP DATABASE IF EXISTS `genericdaotest`;
+
+CREATE DATABASE IF NOT EXISTS `genericdaotest`;
