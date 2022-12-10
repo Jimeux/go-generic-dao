@@ -2,6 +2,12 @@
 
 ### Reducing `database/sql` boilerplate using Go generics without the need for added dependencies. 
 
+## Medium Article
+
+For a full explanation of the code, please see the accompanying blog post.
+
+- [Abstracting database/sql boilerplate with Go generics](https://medium.com/eureka-engineering/abstracting-database-sql-boilerplate-with-go-generics-1471d969beed)
+
 ## Setup
 
 ### Environment variables 

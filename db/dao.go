@@ -29,7 +29,7 @@ type Column interface {
 }
 
 // Create executes the insert statement found in q.
-// It returned the last inserted ID if any.
+// It returns the last inserted ID if any.
 func Create(ctx context.Context, q string, args ...any) (int64, error) {
 	res, err := database.ExecContext(ctx, q, args...)
 	if err != nil {
