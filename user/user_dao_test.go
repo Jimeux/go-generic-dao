@@ -124,9 +124,13 @@ func TestUserDAO_FindByIDs(t *testing.T) {
 		}
 
 		want := []User{user1, user2}
-		got, err := dao.FindByIDs(ctx, []int64{user1.ID, user2.ID})
-		if err != nil {
-			t.Fatal(err)
+		var got []User
+		iter := dao.FindByIDs(ctx, []int64{user1.ID, user2.ID})
+		for u, err := range iter {
+			if err != nil {
+				t.Fatal(err)
+			}
+			got = append(got, u)
 		}
 		if !cmp.Equal(got, want) {
 			t.Fatalf(cmp.Diff(want, got))
@@ -134,12 +138,9 @@ func TestUserDAO_FindByIDs(t *testing.T) {
 	})
 	t.Run("not found", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
-		got, err := dao.FindByIDs(ctx, []int64{1000})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(got) != 0 {
-			t.Fatalf("expected got to be empty but was len=%d", len(got))
+		iter := dao.FindByIDs(ctx, []int64{1000})
+		for got, err := range iter {
+			t.Fatalf("want empty iterator, got %v, %v", got, err)
 		}
 	})
 }

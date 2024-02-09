@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"iter"
 	"strings"
 	"time"
 )
@@ -67,31 +68,42 @@ func GetColumn[T Column](ctx context.Context, q string, args ...any) (T, error) 
 	return t, nil
 }
 
+func errIter[T any](err error) iter.Seq2[T, error] {
+	return func(yield func(T, error) bool) {
+		var t T
+		yield(t, err)
+	}
+}
+
 // FindRows executes q as a query, and returns rows as type []T.
 // T must implement a ToPtrArgs method with a pointer receiver type.
-func FindRows[T any, PT Row[T]](ctx context.Context, q string, args ...any) ([]T, error) {
+func FindRows[T any, PT Row[T]](ctx context.Context, q string, args ...any) iter.Seq2[T, error] {
 	rows, err := database.QueryContext(ctx, q, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil
 		}
-		return nil, fmt.Errorf("DAO#FindRows QueryContext failed\n%s: %w", q, err)
+		return errIter[T](fmt.Errorf("DAO#FindRows QueryContext failed\n%s: %w", q, err))
 	}
-	defer func() { _ = rows.Close() }()
 
-	var result []T
-	for rows.Next() {
-		var t T
-		ptr := PT(&t)
-		if err := rows.Scan(ptr.PtrFields()...); err != nil {
-			return nil, fmt.Errorf("DAO#FindRows row.Scan error\n%s: %w", q, err)
+	return func(yield func(T, error) bool) {
+		defer func() { _ = rows.Close() }()
+		for rows.Next() {
+			var t T
+			ptr := PT(&t)
+			if err := rows.Scan(ptr.PtrFields()...); err != nil {
+				yield(t, fmt.Errorf("DAO#FindRows row.Scan error\n%s: %w", q, err))
+				break
+			}
+			if !yield(t, nil) {
+				break
+			}
 		}
-		result = append(result, t)
+		if err := rows.Err(); err != nil {
+			var t T
+			yield(t, fmt.Errorf("DAO#FindRows rows.Err()\n%s: %w", q, err))
+		}
 	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("DAO#FindRows rows.Err()\n%s: %w", q, err)
-	}
-	return result, nil
 }
 
 // FindColumns executes q as a query, and returns rows as type []T.
