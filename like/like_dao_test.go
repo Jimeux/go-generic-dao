@@ -127,11 +127,11 @@ func TestLikeDAO_FindByUser(t *testing.T) {
 
 		want := []Like{like1, like2}
 		var got []Like
-		for u, err := range dao.FindByUser(ctx, like2.UserID) {
+		for l, err := range dao.FindByUser(ctx, like2.UserID) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got = append(got, u)
+			got = append(got, l)
 		}
 		if !cmp.Equal(got, want) {
 			t.Fatalf(cmp.Diff(want, got))
