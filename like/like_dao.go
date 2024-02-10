@@ -2,6 +2,7 @@ package like
 
 import (
 	"context"
+	"iter"
 
 	"github.com/Jimeux/go-generic-dao/db"
 )
@@ -30,6 +31,6 @@ func (DAO) Count(ctx context.Context) (int64, error) {
 
 const findByUserQuery = "SELECT " + Columns + " FROM " + Table + " WHERE `user_id` = ? ORDER BY `id`;"
 
-func (DAO) FindByUser(ctx context.Context, userID int64) ([]Like, error) {
+func (DAO) FindByUser(ctx context.Context, userID int64) iter.Seq2[Like, error] {
 	return db.FindRows[Like](ctx, findByUserQuery, userID)
 }

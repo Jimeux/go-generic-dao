@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"iter"
 
 	"github.com/Jimeux/go-generic-dao/db"
 )
@@ -31,7 +32,7 @@ func (DAO) Count(ctx context.Context) (int64, error) {
 
 const findByIDsQuery = "SELECT " + Columns + " FROM " + Table + " WHERE `id` IN (%s) ORDER BY `id`;"
 
-func (DAO) FindByIDs(ctx context.Context, ids []int64) ([]User, error) {
+func (DAO) FindByIDs(ctx context.Context, ids []int64) iter.Seq2[User, error] {
 	placeholders, args := db.InArgs(ids)
 	q := fmt.Sprintf(findByIDsQuery, placeholders)
 	return db.FindRows[User](ctx, q, args...)
@@ -39,6 +40,6 @@ func (DAO) FindByIDs(ctx context.Context, ids []int64) ([]User, error) {
 
 const findIDsWithBioQuery = "SELECT `id` FROM " + Table + " WHERE `bio` IS NOT NULL;"
 
-func (DAO) FindIDsWithBio(ctx context.Context) ([]int64, error) {
+func (DAO) FindIDsWithBio(ctx context.Context) iter.Seq2[int64, error] {
 	return db.FindColumns[int64](ctx, findIDsWithBioQuery)
 }
