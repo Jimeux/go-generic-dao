@@ -40,6 +40,6 @@ func (DAO) FindByIDs(ctx context.Context, ids []int64) iter.Seq2[User, error] {
 
 const findIDsWithBioQuery = "SELECT `id` FROM " + Table + " WHERE `bio` IS NOT NULL;"
 
-func (DAO) FindIDsWithBio(ctx context.Context) ([]int64, error) {
+func (DAO) FindIDsWithBio(ctx context.Context) iter.Seq2[int64, error] {
 	return db.FindColumns[int64](ctx, findIDsWithBioQuery)
 }

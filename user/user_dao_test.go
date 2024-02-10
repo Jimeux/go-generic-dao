@@ -33,7 +33,7 @@ func TestUserDAO_Create(t *testing.T) {
 	ctx := context.Background()
 	dao := DAO{}
 
-	t.Run("Create", func(t *testing.T) {
+	t.Run("create", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
 		want := defaultUser()
 		got, err := dao.Create(ctx, want)
@@ -151,9 +151,12 @@ func TestUserDAO_FindIDsWithBio(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
-		got, err := dao.FindIDsWithBio(ctx)
-		if err != nil {
-			t.Fatal(err)
+		var got []int64
+		iter := dao.FindIDsWithBio(ctx)
+		for _, err := range iter {
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 		if len(got) != 0 {
 			t.Fatalf("expected got to be empty but was len=%d", len(got))
