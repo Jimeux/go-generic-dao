@@ -17,7 +17,7 @@ func defaultUser() User {
 	return User{
 		ID:        1,
 		Nickname:  "Socks",
-		Bio:       sql.NullString{},
+		Bio:       sql.Null[string]{},
 		CreatedAt: time.Now().UTC().Truncate(time.Second),
 	}
 }
