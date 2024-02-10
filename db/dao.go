@@ -68,25 +68,19 @@ func GetColumn[T Column](ctx context.Context, q string, args ...any) (T, error) 
 	return t, nil
 }
 
-func errIter[T any](err error) iter.Seq2[T, error] {
-	return func(yield func(T, error) bool) {
-		var t T
-		yield(t, err)
-	}
-}
-
 // FindRows executes q as a query, and returns rows as type []T.
 // T must implement a ToPtrArgs method with a pointer receiver type.
 func FindRows[T any, PT Row[T]](ctx context.Context, q string, args ...any) iter.Seq2[T, error] {
-	rows, err := database.QueryContext(ctx, q, args...)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		return errIter[T](fmt.Errorf("DAO#FindRows QueryContext failed\n%s: %w", q, err))
-	}
-
 	return func(yield func(T, error) bool) {
+		rows, err := database.QueryContext(ctx, q, args...)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return // empty iterator
+			}
+			var t T
+			yield(t, fmt.Errorf("DAO#FindRows QueryContext failed\n%s: %w", q, err))
+			return
+		}
 		defer func() { _ = rows.Close() }()
 		for rows.Next() {
 			var t T
