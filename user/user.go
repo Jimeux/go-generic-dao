@@ -13,7 +13,7 @@ const (
 type User struct {
 	ID        int64
 	Nickname  string
-	Bio       sql.NullString
+	Bio       sql.Null[string]
 	CreatedAt time.Time
 }
 

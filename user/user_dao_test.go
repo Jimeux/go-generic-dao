@@ -17,7 +17,7 @@ func defaultUser() User {
 	return User{
 		ID:        1,
 		Nickname:  "Socks",
-		Bio:       sql.NullString{},
+		Bio:       sql.Null[string]{},
 		CreatedAt: time.Now().UTC().Truncate(time.Second),
 	}
 }
@@ -125,8 +125,7 @@ func TestUserDAO_FindByIDs(t *testing.T) {
 
 		want := []User{user1, user2}
 		var got []User
-		iter := dao.FindByIDs(ctx, []int64{user1.ID, user2.ID})
-		for u, err := range iter {
+		for u, err := range dao.FindByIDs(ctx, []int64{user1.ID, user2.ID}) {
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -138,8 +137,7 @@ func TestUserDAO_FindByIDs(t *testing.T) {
 	})
 	t.Run("not found", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
-		iter := dao.FindByIDs(ctx, []int64{1000})
-		for got, err := range iter {
+		for got, err := range dao.FindByIDs(ctx, []int64{1000}) {
 			t.Fatalf("want empty iterator, got %v, %v", got, err)
 		}
 	})
@@ -149,14 +147,40 @@ func TestUserDAO_FindIDsWithBio(t *testing.T) {
 	ctx := context.Background()
 	dao := DAO{}
 
-	t.Run("not found", func(t *testing.T) {
+	t.Run("found", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
+
+		user1 := defaultUser()
+		user1.Bio = sql.Null[string]{V: "Hi there", Valid: true}
+		user1, err := dao.Create(ctx, user1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		user2 := defaultUser()
+		user2, err = dao.Create(ctx, user2)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		var got []int64
-		iter := dao.FindIDsWithBio(ctx)
-		for _, err := range iter {
+		for id, err := range dao.FindIDsWithBio(ctx) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			got = append(got, id)
+		}
+		if len(got) != 0 {
+			t.Fatalf("expected got to be empty but was len=%d", len(got))
+		}
+	})
+	t.Run("not found", func(t *testing.T) {
+		t.Cleanup(test.Truncate(t, Table))
+		var got []int64
+		for id, err := range dao.FindIDsWithBio(ctx) {
+			if err != nil {
+				t.Fatal(err)
+			}
+			got = append(got, id)
 		}
 		if len(got) != 0 {
 			t.Fatalf("expected got to be empty but was len=%d", len(got))

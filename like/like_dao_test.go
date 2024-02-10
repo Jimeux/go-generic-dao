@@ -127,8 +127,7 @@ func TestLikeDAO_FindByUser(t *testing.T) {
 
 		want := []Like{like1, like2}
 		var got []Like
-		iter := dao.FindByUser(ctx, like2.UserID)
-		for u, err := range iter {
+		for u, err := range dao.FindByUser(ctx, like2.UserID) {
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -140,8 +139,7 @@ func TestLikeDAO_FindByUser(t *testing.T) {
 	})
 	t.Run("not found", func(t *testing.T) {
 		t.Cleanup(test.Truncate(t, Table))
-		iter := dao.FindByUser(ctx, 1000)
-		for got, err := range iter {
+		for got, err := range dao.FindByUser(ctx, 1000) {
 			t.Fatalf("want empty iterator, got %v, %v", got, err)
 		}
 	})
